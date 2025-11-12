@@ -43,27 +43,10 @@
     </div>
   </div>
 
-  <!-- APP -->
+  <!-- APP (bez headera/stopki) -->
   <div class="mx-auto max-w-5xl px-4 py-6 sm:py-10">
-    <header class="flex items-center justify-between gap-4">
-      <div class="flex items-center gap-3">
-        <img src="/icons/icon-192.png" class="h-10 w-10 rounded-xl" alt="Cravers">
-        <div>
-          <h1 class="text-2xl font-bold tracking-tight">Cravers</h1>
-          <p class="text-sm text-slate-400">Panel wewnętrzny • Oferty • Umowy • Wydruki</p>
-        </div>
-      </div>
-      <nav class="hidden sm:flex gap-2">
-        <a href="#/" class="px-3 py-1 rounded-lg bg-slate-800/70 ring-1 ring-white/10">Start</a>
-        <a href="#/oferty" class="px-3 py-1 rounded-lg bg-slate-800/70 ring-1 ring-white/10">Oferty</a>
-        <a href="#/podpisz" class="px-3 py-1 rounded-lg bg-slate-800/70 ring-1 ring-white/10">Podpisz umowę</a>
-        <a href="#/ustalenia" class="px-3 py-1 rounded-lg bg-slate-800/70 ring-1 ring-white/10">Ustalenia weselne</a>
-        <a href="#/drukuj" class="px-3 py-1 rounded-lg bg-slate-800/70 ring-1 ring-white/10">Drukuj</a>
-      </nav>
-    </header>
-
-    <main id="view" class="mt-6"></main>
- </div>
+    <main id="view" class="mt-0"></main>
+  </div>
 
   <script>
     /************* KONFIG – PODMIENISZ TYLKO TE LINKI *************/
@@ -77,16 +60,16 @@
         inna: 'https://docs.google.com/forms/...',    // Google Form
       },
       ustalenia: {
-        form: 'https://docs.google.com/forms/...', // ten sam link do „Przeprowadź sam” i do kopiowania
+        form: 'https://docs.google.com/forms/...', // „Przeprowadź sam” i „Kopiuj link”
       },
       drukuj: {
         oferty: {
-          wesele: { 2026: {url: 'https://...pdf', action: 'preview'},
-                    2027: {url: 'https://...pdf', action: 'preview'},
-                    2028: {url: 'https://...pdf', action: 'preview'} },
-          studniowka: { 2026: {url: 'https://...pdf', action: 'preview'},
-                        2027: {url: 'https://...pdf', action: 'preview'},
-                        2028: {url: 'https://...pdf', action: 'preview'} },
+          wesele:   { 2026: {url: 'https://...pdf', action: 'preview'},
+                      2027: {url: 'https://...pdf', action: 'preview'},
+                      2028: {url: 'https://...pdf', action: 'preview'} },
+          studniowka:{ 2026: {url: 'https://...pdf', action: 'preview'},
+                      2027: {url: 'https://...pdf', action: 'preview'},
+                      2028: {url: 'https://...pdf', action: 'preview'} },
         },
         czysteUmowy: {
           weselna: {url: 'https://...pdf', action: 'preview'},
@@ -185,7 +168,6 @@
     }
 
     function renderDrukuj(){
-      // Oferty
       view.append(el('h2','text-xl font-semibold mb-3','Drukuj'));
       const s1 = section('Oferty — Wesele');
       const s2 = section('Oferty — Studniówka');
@@ -197,13 +179,11 @@
       });
       view.append(s1); view.append(s2);
 
-      // Czyste umowy
       const s3 = section('Czyste umowy');
       if(LINKS.drukuj.czysteUmowy.weselna?.url) s3.append(listLink('Weselna', LINKS.drukuj.czysteUmowy.weselna.url, LINKS.drukuj.czysteUmowy.weselna));
       if(LINKS.drukuj.czysteUmowy.inna?.url)    s3.append(listLink('Inna',    LINKS.drukuj.czysteUmowy.inna.url,    LINKS.drukuj.czysteUmowy.inna));
       view.append(s3);
 
-      // Ustalenia / Scenariusz
       const s4 = section('Ustalenia weselne');
       if(LINKS.drukuj.ustaleniaWeselne?.url) s4.append(listLink('Ustalenia weselne', LINKS.drukuj.ustaleniaWeselne.url, LINKS.drukuj.ustaleniaWeselne));
       view.append(s4);
@@ -232,10 +212,9 @@
       setTimeout(()=>t.remove(), 1800);
     }
 
-    // PRINT helper page (inline)
-    // Jeśli nie masz osobnego pliku print.html na StackBlitz, to niżej tworzę go w locie:
+    // PRINT helper page (dev)
     (function ensurePrintHelper(){
-      if(!location.origin.includes('stackblitz')) return; // tylko dev
+      if(!location.origin.includes('stackblitz')) return;
       const blob = new Blob([`
         <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Drukuj</title></head>
         <body style="margin:0;height:100vh;background:#000">
@@ -250,7 +229,7 @@
         </body></html>
       `], {type:'text/html'});
       const url = URL.createObjectURL(blob);
-      window.printHelperURL = url; // do debug
+      window.printHelperURL = url;
     })();
 
     /******************* PIN (narzucony) — zapamiętaj 30 dni *******************/
@@ -300,5 +279,3 @@
   </script>
 </body>
 </html>
-
-
