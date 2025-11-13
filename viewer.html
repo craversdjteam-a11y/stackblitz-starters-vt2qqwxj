@@ -18,31 +18,35 @@
       display: block;
       background: #020617;
     }
-    /* mini przycisk powrotu (jak chcesz kiedyś dodać) */
   </style>
 </head>
 <body>
   <iframe id="frame" referrerpolicy="no-referrer"></iframe>
   <script>
     const u = new URL(location.href);
-    let src  = u.searchParams.get('src') || '';
+    const encodedSrc = u.searchParams.get('src') || ''; // Pobieramy zakodowany URL
     const mode = u.searchParams.get('mode') || 'open';
 
-    // Jeśli Google Forms → dodaj embedded=true
-    if (src.includes('docs.google.com/forms') && !src.includes('embedded=true')) {
-      src += (src.includes('?') ? '&' : '?') + 'embedded=true';
-    }
-
     const frame = document.getElementById('frame');
-    frame.onload = () => {
-      if (mode === 'print') {
-        // chwilka na załadowanie PDF/strony
-        setTimeout(() => {
-          try { window.print(); } catch (e) {}
-        }, 500);
-      }
-    };
-    frame.src = src;
+    
+    if (encodedSrc) {
+        // Dekodujemy URL
+        const src = decodeURIComponent(encodedSrc);
+
+        // Jeśli to Formularz, upewniamy się, że ma embedded=true
+        let finalSrc = src;
+        if (finalSrc.includes('docs.google.com/forms') && !finalSrc.includes('embedded=true')) {
+            finalSrc += (finalSrc.includes('?') ? '&' : '?') + 'embedded=true';
+        }
+        
+        frame.src = finalSrc;
+    }
+    
+    // Usunięto logikę drukowania, ponieważ jest teraz obsługiwana bezpośrednio w index.html
+    // poprzez window.open(link_do_druku)
+
+    // Opcjonalnie: Przycisk powrotu w viewer.html (jeśli chcesz go później dodać, możesz użyć:
+    // <a href="#" onclick="window.history.back();" class="back-button">← Powrót</a>
   </script>
 </body>
 </html>
