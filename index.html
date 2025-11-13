@@ -45,7 +45,7 @@
 
   <script>
     /************* KONFIG LINKÓW *************
-     * TU WKLEJASZ TYLKO ID PLIKÓW DLA PDFÓW!
+     * TYLKO ID PLIKÓW DLA PDFÓW!
      *****************************************/
     const LINKS = {
       oferty: {
@@ -61,7 +61,7 @@
         },
       },
       podpisz: {
-        // TUTAJ POZOSTAJĄ PEŁNE LINKI DO FORMULARZY
+        // PEŁNE LINKI DO FORMULARZY
         weselna: 'https://docs.google.com/forms/d/e/1FAIpQLSeqM0EvJmnepVRwYDc_mZ9ngosOVM_di0MohkLFo2x7xKJdfA/viewform?embedded=true',
         inna:    'https://docs.google.com/forms/d/e/1FAIpQLSeqM0EvJmnepVRwYDc_mZ9ngosOVM_di0MohkLFo2x7xKJdfA/viewform?embedded=true',
       },
@@ -99,6 +99,7 @@
       return b;
     }
 
+    // ZMODYFIKOWANA FUNKCJA rowWithActions - usunięto przycisk drukuj
     function rowWithActions(label, urlOrFileId) {
       if (!urlOrFileId) {
         const box = el(
@@ -116,19 +117,11 @@
       const btnRow = el('div', 'flex flex-wrap gap-2');
       const openBtn  = makeActionButton('Otwórz', 'primary');
       const copyBtn  = makeActionButton('Kopiuj link', 'secondary');
-      const printBtn = makeActionButton('Drukuj', 'ghost');
 
-      openBtn.onclick  = () => openInViewer(urlOrFileId, 'open');
+      openBtn.onclick  = () => openInViewer(urlOrFileId);
       copyBtn.onclick  = () => copyLink(urlOrFileId);
       
-      // Dodaj przycisk Drukuj tylko dla plików Drive
-      if (isDriveFile) {
-        printBtn.onclick = () => openInViewer(urlOrFileId, 'print');
-        btnRow.append(openBtn, copyBtn, printBtn);
-      } else {
-        btnRow.append(openBtn, copyBtn);
-      }
-
+      btnRow.append(openBtn, copyBtn);
       box.append(btnRow);
       return box;
     }
@@ -208,37 +201,26 @@
       view.append(wrap);
     }
 
-    // ZMODYFIKOWANA FUNKCJA openInViewer
-    function openInViewer(urlOrFileId, mode = 'open'){
+    // UPROSZCZONA FUNKCJA openInViewer
+    function openInViewer(urlOrFileId){
       if (!urlOrFileId) return alert('Brak linku.');
       
       const isDriveFile = urlOrFileId.length < 100 && !urlOrFileId.startsWith('http');
       let targetUrl;
 
       if (isDriveFile) {
-        // TO JEST PLIK Z DRIVE (PDF)
-        
-        // --- ZAWSZE OTWÓRZ W NOWEJ KARCIE DLA PLIKÓW DRIVE (OMINIĘCIE BLOKAD IFRAME) ---
-
-        if (mode === 'print') {
-            // Najlepsza opcja do druku: otwiera plik w przeglądarce
-            targetUrl = `https://drive.google.com/file/d/${urlOrFileId}/view?usp=sharing`;
-        } else {
-            // Najlepsza opcja do podglądu (preview)
-            targetUrl = `https://drive.google.com/file/d/${urlOrFileId}/preview`;
-        }
-        
-        // Otwarcie w nowym oknie (omija viewer.html dla PDF-ów)
+        // TO JEST PLIK Z DRIVE (PDF) - Otwieramy w nowej karcie
+        targetUrl = `https://drive.google.com/file/d/${urlOrFileId}/preview`;
         window.open(targetUrl, '_blank');
         return; 
       } else {
-        // TO JEST PEŁNY URL (Formularz) - nadal używa viewer.html
-        targetUrl = `viewer.html?src=${encodeURIComponent(urlOrFileId)}&mode=${mode}`;
+        // TO JEST PEŁNY URL (Formularz) - Otwieramy w viewer.html
+        targetUrl = `viewer.html?src=${encodeURIComponent(urlOrFileId)}`;
         location.href = targetUrl;
       }
     }
 
-    // ZMODYFIKOWANA FUNKCJA copyLink
+    // FUNKCJA copyLink (bez zmian, pracuje na ID lub pełnym URL)
     async function copyLink(urlOrFileId){
       if (!urlOrFileId) return alert('Brak linku.');
       
