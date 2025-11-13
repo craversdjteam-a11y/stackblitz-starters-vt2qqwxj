@@ -18,35 +18,49 @@
       display: block;
       background: #020617;
     }
+    .back-button {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      z-index: 1000;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      text-decoration: none;
+      font-family: sans-serif;
+      font-size: 14px;
+    }
+    .back-button:hover {
+        background-color: rgba(0, 0, 0, 0.8);
+    }
   </style>
 </head>
 <body>
   <iframe id="frame" referrerpolicy="no-referrer"></iframe>
+  <a href="#" onclick="window.history.back(); return false;" class="back-button">← Powrót</a>
+
   <script>
     const u = new URL(location.href);
-    const encodedSrc = u.searchParams.get('src') || ''; // Pobieramy zakodowany URL
-    const mode = u.searchParams.get('mode') || 'open';
+    const encodedSrc = u.searchParams.get('src') || ''; 
 
     const frame = document.getElementById('frame');
     
     if (encodedSrc) {
-        // Dekodujemy URL
-        const src = decodeURIComponent(encodedSrc);
+        let src = decodeURIComponent(encodedSrc);
 
-        // Jeśli to Formularz, upewniamy się, że ma embedded=true
-        let finalSrc = src;
-        if (finalSrc.includes('docs.google.com/forms') && !finalSrc.includes('embedded=true')) {
-            finalSrc += (finalSrc.includes('?') ? '&' : '?') + 'embedded=true';
+        // Upewnij się, że Formularze Google są osadzone poprawnie
+        if (src.includes('docs.google.com/forms') && !src.includes('embedded=true')) {
+            src += (src.includes('?') ? '&' : '?') + 'embedded=true';
         }
         
-        frame.src = finalSrc;
+        frame.src = src;
+    } else {
+        alert('Brak źródła do wyświetlenia.');
+        window.history.back();
     }
-    
-    // Usunięto logikę drukowania, ponieważ jest teraz obsługiwana bezpośrednio w index.html
-    // poprzez window.open(link_do_druku)
-
-    // Opcjonalnie: Przycisk powrotu w viewer.html (jeśli chcesz go później dodać, możesz użyć:
-    // <a href="#" onclick="window.history.back();" class="back-button">← Powrót</a>
   </script>
 </body>
 </html>
