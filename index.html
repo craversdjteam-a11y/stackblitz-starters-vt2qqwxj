@@ -5,16 +5,12 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cravers</title>
 
-  <!-- iOS PWA fullscreen -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <!-- tu używasz pliku z repo root -->
   <link rel="apple-touch-icon" href="/icon-192.png" />
 
-  <!-- Manifest PWA -->
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Tailwind (CDN) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .tile { transition: transform .12s ease, box-shadow .12s ease; }
@@ -22,7 +18,6 @@
   </style>
 </head>
 <body class="min-h-screen bg-slate-950 text-slate-50">
-  <!-- LOCK: PIN narzucony z góry -->
   <div id="cr_lock" class="fixed inset-0 flex items-center justify-center bg-black/90 z-[9999]">
     <div class="w-[360px] max-w-[92%] p-6 rounded-xl bg-slate-900 text-center shadow-2xl">
       <img src="/icon-192.png" class="w-14 mx-auto mb-2 rounded-lg" alt="">
@@ -44,35 +39,37 @@
     </div>
   </div>
 
-  <!-- APP -->
   <div class="mx-auto max-w-5xl px-4 py-6 sm:py-10">
     <main id="view" class="mt-0"></main>
   </div>
 
   <script>
     /************* KONFIG LINKÓW *************
-     * TU PODMIENIASZ TYLKO URL-E
+     * TU WKLEJASZ TYLKO ID PLIKÓW DLA PDFÓW!
+     * UWAGA: Linki do Formularzy Google pozostają PEŁNYMI URL-ami.
      *****************************************/
     const LINKS = {
       oferty: {
         wesele: {
-          2026: 'https://drive.google.com/file/d/12nC-tLsALrsNhSn4K_OqL4fIllUspLPR/view?usp=sharing',
-          2027: 'https://drive.google.com/file/d/1i58nooBe62mBEiqPWiay5EvIFHHnOAuO/view?usp=sharing',
-          2028: 'https://drive.google.com/file/d/1PUBO75O_clReMCjICj28PsCyjSdMKXiL/view?usp=sharing',
+          // TUTAJ SĄ TYLKO ID PLIKÓW PDF Z GOOGLE DRIVE (np. 12nC-tLsALrsNhSn4K_OqL4fIllUspLPR)
+          2026: '12nC-tLsALrsNhSn4K_OqL4fIllUspLPR',
+          2027: '1i58nooBe62mBEiqPWiay5EvIFHHnOAuO',
+          2028: '1PUBO75O_clReMCjICj28PsCyjSdMKXiL',
         },
         studniowka: {
-          2026: '', // TODO: wklej link
-          2027: '', // TODO: wklej link
-          2028: '', // TODO: wklej link
+          2026: '', // TODO: wklej ID pliku
+          2027: '', // TODO: wklej ID pliku
+          2028: '', // TODO: wklej ID pliku
         },
       },
       podpisz: {
+        // TUTAJ POZOSTAJĄ PEŁNE LINKI DO FORMULARZY
         weselna: 'https://docs.google.com/forms/d/e/TU_WKLEJ_PELNY_LINK_DO_FORMULARZA_WESELNEGO/viewform?usp=header',
         inna:    'https://docs.google.com/forms/d/e/TU_WKLEJ_PELNY_LINK_DO_FORMULARZA_INNA/viewform?usp=header',
       },
       pozostale: {
-        ustalenia:  '', // PDF z przykładowymi ustaleniami
-        scenariusz: ''  // PDF z przykładowym scenariuszem
+        ustalenia:  '', // ID PDF z przykładowymi ustaleniami
+        scenariusz: ''  // ID PDF z przykładowym scenariuszem
       }
     };
     /*****************************************/
@@ -104,8 +101,9 @@
       return b;
     }
 
-    function rowWithActions(label, url) {
-      if (!url) {
+    // ZMODYFIKOWANA FUNKCJA rowWithActions
+    function rowWithActions(label, urlOrFileId) {
+      if (!urlOrFileId) {
         const box = el(
           'div',
           'rounded-2xl bg-slate-900/40 p-4 text-xs sm:text-sm text-slate-500 border border-dashed border-slate-700',
@@ -113,7 +111,8 @@
         );
         return box;
       }
-
+      
+      const isDriveFile = urlOrFileId.length < 100 && !urlOrFileId.startsWith('http');
       const box = el('div', 'rounded-2xl bg-slate-900/80 p-4 space-y-3 shadow');
       box.append(el('div', 'text-sm sm:text-base font-semibold', label));
 
@@ -122,11 +121,17 @@
       const copyBtn  = makeActionButton('Kopiuj link', 'secondary');
       const printBtn = makeActionButton('Drukuj', 'ghost');
 
-      openBtn.onclick  = () => openInViewer(url, 'open');
-      copyBtn.onclick  = () => copyLink(url);
-      printBtn.onclick = () => openInViewer(url, 'print');
+      openBtn.onclick  = () => openInViewer(urlOrFileId, 'open');
+      copyBtn.onclick  = () => copyLink(urlOrFileId);
+      
+      // Dodaj przycisk Drukuj tylko dla plików Drive
+      if (isDriveFile) {
+        printBtn.onclick = () => openInViewer(urlOrFileId, 'print');
+        btnRow.append(openBtn, copyBtn, printBtn);
+      } else {
+        btnRow.append(openBtn, copyBtn);
+      }
 
-      btnRow.append(openBtn, copyBtn, printBtn);
       box.append(btnRow);
       return box;
     }
@@ -184,8 +189,8 @@
       const wrap = el('div','space-y-3');
       const years = Object.keys(LINKS.oferty[type] || {}).sort();
       years.forEach(y => {
-        const url = LINKS.oferty[type][y];
-        wrap.append(rowWithActions(`${nice} ${y}`, url));
+        const urlOrFileId = LINKS.oferty[type][y];
+        wrap.append(rowWithActions(`${nice} ${y}`, urlOrFileId));
       });
       view.append(wrap);
     }
@@ -206,20 +211,49 @@
       view.append(wrap);
     }
 
-    // viewer fullscreen (pdf/formularz)
-    function openInViewer(url, mode = 'open'){
-      if (!url) return alert('Brak linku.');
-      const target = `viewer.html?src=${encodeURIComponent(url)}&mode=${encodeURIComponent(mode)}`;
-      location.href = target;
+    // ZMODYFIKOWANA FUNKCJA openInViewer
+    function openInViewer(urlOrFileId, mode = 'open'){
+      if (!urlOrFileId) return alert('Brak linku.');
+      
+      const isDriveFile = urlOrFileId.length < 100 && !urlOrFileId.startsWith('http');
+      let targetUrl;
+
+      if (isDriveFile) {
+        // TO JEST PLIK Z DRIVE (PDF)
+        
+        if (mode === 'print') {
+          // Dla szybkiego drukowania, otwieramy link Drive w nowej karcie (najlepiej w formacie download/uc)
+          // To wymusi na przeglądarce otworzenie/pobranie pliku, z którego można od razu drukować.
+          window.open(`https://drive.google.com/uc?export=download&id=${urlOrFileId}`, '_blank');
+          return; // Zakończ, nie ładuj viewer.html
+        } else {
+          // Dla podglądu, używamy Google Docs Viewer
+          const rawDriveUrl = `https://drive.google.com/file/d/${urlOrFileId}/view`;
+          const viewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(rawDriveUrl)}`;
+          targetUrl = `viewer.html?src=${encodeURIComponent(viewerUrl)}&mode=${mode}`;
+        }
+      } else {
+        // TO JEST PEŁNY URL (Formularz)
+        targetUrl = `viewer.html?src=${encodeURIComponent(urlOrFileId)}&mode=${mode}`;
+      }
+
+      location.href = targetUrl;
     }
 
-    async function copyLink(url){
-      if (!url) return alert('Brak linku.');
+    // ZMODYFIKOWANA FUNKCJA copyLink
+    async function copyLink(urlOrFileId){
+      if (!urlOrFileId) return alert('Brak linku.');
+      
+      const isDriveFile = urlOrFileId.length < 100 && !urlOrFileId.startsWith('http');
+      const urlToCopy = isDriveFile 
+        ? `https://drive.google.com/file/d/${urlOrFileId}/view?usp=sharing` // Skopiuj standardowy link do udostępniania
+        : urlOrFileId; // Skopiuj pełny URL formularza
+
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(urlToCopy);
         toast('Skopiowano link ✅');
       } catch {
-        prompt('Skopiuj ręcznie:', url);
+        prompt('Skopiuj ręcznie:', urlToCopy);
       }
     }
 
