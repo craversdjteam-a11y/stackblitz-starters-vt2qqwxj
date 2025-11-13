@@ -46,12 +46,10 @@
   <script>
     /************* KONFIG LINKÓW *************
      * TU WKLEJASZ TYLKO ID PLIKÓW DLA PDFÓW!
-     * UWAGA: Linki do Formularzy Google pozostają PEŁNYMI URL-ami.
      *****************************************/
     const LINKS = {
       oferty: {
         wesele: {
-          // TUTAJ SĄ TYLKO ID PLIKÓW PDF Z GOOGLE DRIVE (np. 12nC-tLsALrsNhSn4K_OqL4fIllUspLPR)
           2026: '12nC-tLsALrsNhSn4K_OqL4fIllUspLPR',
           2027: '1i58nooBe62mBEiqPWiay5EvIFHHnOAuO',
           2028: '1PUBO75O_clReMCjICj28PsCyjSdMKXiL',
@@ -64,8 +62,8 @@
       },
       podpisz: {
         // TUTAJ POZOSTAJĄ PEŁNE LINKI DO FORMULARZY
-        weselna: 'https://docs.google.com/forms/d/e/TU_WKLEJ_PELNY_LINK_DO_FORMULARZA_WESELNEGO/viewform?usp=header',
-        inna:    'https://docs.google.com/forms/d/e/TU_WKLEJ_PELNY_LINK_DO_FORMULARZA_INNA/viewform?usp=header',
+        weselna: 'https://docs.google.com/forms/d/e/1FAIpQLSeqM0EvJmnepVRwYDc_mZ9ngosOVM_di0MohkLFo2x7xKJdfA/viewform?embedded=true',
+        inna:    'https://docs.google.com/forms/d/e/1FAIpQLSeqM0EvJmnepVRwYDc_mZ9ngosOVM_di0MohkLFo2x7xKJdfA/viewform?embedded=true',
       },
       pozostale: {
         ustalenia:  '', // ID PDF z przykładowymi ustaleniami
@@ -101,7 +99,6 @@
       return b;
     }
 
-    // ZMODYFIKOWANA FUNKCJA rowWithActions
     function rowWithActions(label, urlOrFileId) {
       if (!urlOrFileId) {
         const box = el(
@@ -221,23 +218,24 @@
       if (isDriveFile) {
         // TO JEST PLIK Z DRIVE (PDF)
         
-        if (mode === 'print') {
-          // Dla szybkiego drukowania, otwieramy link Drive w nowej karcie (najlepiej w formacie download/uc)
-          // To wymusi na przeglądarce otworzenie/pobranie pliku, z którego można od razu drukować.
-          window.open(`https://drive.google.com/uc?export=download&id=${urlOrFileId}`, '_blank');
-          return; // Zakończ, nie ładuj viewer.html
-        } else {
-          // Dla podglądu, używamy Google Docs Viewer
-          const rawDriveUrl = `https://drive.google.com/file/d/${urlOrFileId}/view`;
-          const viewerUrl = `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(rawDriveUrl)}`;
-          targetUrl = `viewer.html?src=${encodeURIComponent(viewerUrl)}&mode=${mode}`;
-        }
-      } else {
-        // TO JEST PEŁNY URL (Formularz)
-        targetUrl = `viewer.html?src=${encodeURIComponent(urlOrFileId)}&mode=${mode}`;
-      }
+        // --- ZAWSZE OTWÓRZ W NOWEJ KARCIE DLA PLIKÓW DRIVE (OMINIĘCIE BLOKAD IFRAME) ---
 
-      location.href = targetUrl;
+        if (mode === 'print') {
+            // Najlepsza opcja do druku: otwiera plik w przeglądarce
+            targetUrl = `https://drive.google.com/file/d/${urlOrFileId}/view?usp=sharing`;
+        } else {
+            // Najlepsza opcja do podglądu (preview)
+            targetUrl = `https://drive.google.com/file/d/${urlOrFileId}/preview`;
+        }
+        
+        // Otwarcie w nowym oknie (omija viewer.html dla PDF-ów)
+        window.open(targetUrl, '_blank');
+        return; 
+      } else {
+        // TO JEST PEŁNY URL (Formularz) - nadal używa viewer.html
+        targetUrl = `viewer.html?src=${encodeURIComponent(urlOrFileId)}&mode=${mode}`;
+        location.href = targetUrl;
+      }
     }
 
     // ZMODYFIKOWANA FUNKCJA copyLink
