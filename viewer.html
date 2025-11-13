@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Cravers — podgląd</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: #020617;
+    }
+    #frame {
+      border: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #020617;
+    }
+    /* mini przycisk powrotu (jak chcesz kiedyś dodać) */
+  </style>
+</head>
+<body>
+  <iframe id="frame" referrerpolicy="no-referrer"></iframe>
+  <script>
+    const u = new URL(location.href);
+    let src  = u.searchParams.get('src') || '';
+    const mode = u.searchParams.get('mode') || 'open';
+
+    // Jeśli Google Forms → dodaj embedded=true
+    if (src.includes('docs.google.com/forms') && !src.includes('embedded=true')) {
+      src += (src.includes('?') ? '&' : '?') + 'embedded=true';
+    }
+
+    const frame = document.getElementById('frame');
+    frame.onload = () => {
+      if (mode === 'print') {
+        // chwilka na załadowanie PDF/strony
+        setTimeout(() => {
+          try { window.print(); } catch (e) {}
+        }, 500);
+      }
+    };
+    frame.src = src;
+  </script>
+</body>
+</html>
