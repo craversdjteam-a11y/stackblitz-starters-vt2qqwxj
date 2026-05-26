@@ -250,9 +250,8 @@
       const hash = await crypto.subtle.digest('SHA-256', data);
       return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,'0')).join('');
     }
-
-    const PRESET_PIN_HASH = 'e2e22643adae16a2c1c327b4547700728399baf9aa40798b388193ea27cccf73'; // PIN = 6455 (podmień hash)
-    const PIN_KEY  = 'cravers_pin_hash';
+    const PRESET_PIN_HASH = 'e2e22643adae16a2c1c327b4547700728399baf9aa40798b388193ea27cccf73'; //pin 6455
+    const PIN_KEY  = 'cravers_pin_hash_v2';
     const AUTH_KEY = 'cravers_auth_token';
 
     function nowMs(){ return Date.now(); }
